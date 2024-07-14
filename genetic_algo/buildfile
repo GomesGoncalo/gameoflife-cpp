@@ -1,0 +1,7 @@
+libs =
+import libs += libsfml-graphics%lib{sfml-graphics}
+import libs += libasio%lib{asio}
+
+exe{genetic_algo}: {hxx ixx txx cxx}{**} $libs testscript
+
+cxx.poptions =+ "-I$out_root" "-I$src_root" "-fexperimental-library"

@@ -1,0 +1,5 @@
+genetic_algo
+
+# Testscript output directory (can be symlink).
+#
+test-genetic_algo

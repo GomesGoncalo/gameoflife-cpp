@@ -1,0 +1,15 @@
+: 1
+name: genetic_algo
+version: 0.1.0-a.0.z
+language: c++
+summary: genetic_algo C++ executable
+license: other: proprietary ; Not free/open source.
+description-file: README.md
+url: https://example.org/genetic_algo
+email: gomesgoncalo@gmail.com
+#build-error-email: gomesgoncalo@gmail.com
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
+#depends: libhello ^1.0.0
+depends: libsfml-graphics ^2.5.1
+depends: libasio ^1.28.0
