@@ -6,7 +6,7 @@
 
 template <typename State, typename Game> struct LogicWidget {
   LogicWidget(
-      asio::io_context &, State &, Game &&,
+      asio::io_context &, State &, Game &,
       std::chrono::milliseconds duration = std::chrono::milliseconds(10));
 
 private:
@@ -14,7 +14,7 @@ private:
   void schedule();
 
   State &state;
-  Game game;
+  Game &game;
   asio::io_context &ctx;
   asio::steady_timer timer;
   std::chrono::milliseconds duration;

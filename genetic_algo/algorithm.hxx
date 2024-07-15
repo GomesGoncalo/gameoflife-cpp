@@ -1,12 +1,14 @@
 #pragma once
 
 #include <asio/io_context.hpp>
+#include <thread>
 
 namespace algo {
 struct serialized {};
 
 struct parallel {
   asio::io_context &ctx;
+  unsigned int threads = std::thread::hardware_concurrency() - 1;
 };
 
 template <typename Container, typename Callable>

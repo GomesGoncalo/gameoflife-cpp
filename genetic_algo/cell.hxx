@@ -6,6 +6,7 @@
 struct point {
   unsigned int x;
   unsigned int y;
+  unsigned int idx;
 };
 
 struct live final : public point {};
@@ -14,6 +15,7 @@ struct dead final : public point {};
 using CellTypes = std::variant<dead, live>;
 
 struct state_data {
+  state_data() = default;
   state_data(unsigned int width, unsigned height, unsigned prob);
 
   unsigned int width = 1000;

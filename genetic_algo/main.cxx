@@ -1,3 +1,4 @@
+#include "algorithm.hxx"
 #include "cell.hxx"
 #include "draw_widget.hxx"
 #include "drawer.hxx"
@@ -30,36 +31,43 @@ template <typename Inequality> struct OnlyDifferent {
       cached.board = modified.board;
     } else {
       Inequality neq;
-      std::ranges::for_each(std::views::zip(cached.board, modified.board) |
-                                std::views::filter([&neq](auto elem) {
-                                  return neq.cmp(elem.first, elem.second);
-                                }),
-                            [](auto elem) noexcept {
-                              auto &[cached, modified] = elem;
-                              cached = modified;
-                            });
+      algo::for_each(
+          algo::parallel{ctx}, cached.board, [&modified, &neq](auto &element) {
+            const auto idx =
+                std::visit([](const auto &p) { return p.idx; }, element);
+            auto &modified_element = modified.board[idx];
+            if (!neq.cmp(element, modified_element)) {
+              return;
+            }
+            element = modified_element;
+          });
     }
   }
+  asio::io_context &ctx;
 };
 
 int main(int argc, char *argv[]) {
-  state_data board(1000, 1000, 70);
+  state_data board;
 
   asio::io_context ctx;
-  OnlyDifferent<VariantDifferentType> updater;
+  OnlyDifferent<VariantDifferentType> updater{ctx};
 
   two_lane::data<decltype(board), OnlyDifferent<VariantDifferentType>> state{
       std::move(board), std::move(updater)};
 
   scheduler threads{ctx};
 
-  LogicWidget logic{ctx, state, Game{}};
+  Game game;
+  LogicWidget logic{ctx, state, game};
 
   asio::io_context main_thr;
   DrawingWidget draw{
-      main_thr,       ctx,
-      "Game of Life", state,
-      Drawer{},       EventHandler<OnlyDifferent<VariantDifferentType>>{state}};
+      main_thr,
+      ctx,
+      game,
+      state,
+      Drawer{},
+      EventHandler<OnlyDifferent<VariantDifferentType>, Game>{state, game}};
   main_thr.run();
   return 0;
 }

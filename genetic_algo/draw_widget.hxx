@@ -3,10 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include <asio/io_context.hpp>
 
-template <typename State, typename Drawer, typename EventHandler>
+template <typename State, typename Drawer, typename EventHandler, typename Game>
 struct DrawingWidget {
-  DrawingWidget(asio::io_context &, asio::io_context &, const std::string &,
-                State &, Drawer &&, EventHandler &&);
+  DrawingWidget(asio::io_context &, asio::io_context &, Game &, State &,
+                Drawer &&, EventHandler &&);
 
 private:
   void run();

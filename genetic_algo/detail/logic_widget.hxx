@@ -4,10 +4,9 @@
 
 template <typename State, typename Game>
 LogicWidget<State, Game>::LogicWidget(asio::io_context &ctx, State &state,
-                                      Game &&game,
+                                      Game &game,
                                       std::chrono::milliseconds duration)
-    : state{state}, game{std::forward<Game>(game)}, ctx{ctx}, timer{ctx},
-      duration{duration} {
+    : state{state}, game{game}, ctx{ctx}, timer{ctx}, duration{duration} {
   schedule();
 }
 

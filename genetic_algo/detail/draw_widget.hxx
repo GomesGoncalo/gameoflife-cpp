@@ -2,14 +2,15 @@
 
 #include <asio/post.hpp>
 
-template <typename State, typename Drawer, typename EventHandler>
-DrawingWidget<State, Drawer, EventHandler>::DrawingWidget(
-    asio::io_context &main_ctx, asio::io_context &ctx, const std::string &name,
-    State &state, Drawer &&drawer, EventHandler &&handler)
-    : main_ctx{main_ctx}, ctx{ctx}, window{[&name, &state] {
+template <typename State, typename Drawer, typename EventHandler, typename Game>
+DrawingWidget<State, Drawer, EventHandler, Game>::DrawingWidget(
+    asio::io_context &main_ctx, asio::io_context &ctx, Game &game, State &state,
+    Drawer &&drawer, EventHandler &&handler)
+    : main_ctx{main_ctx}, ctx{ctx}, window{[&game, &state] {
         const auto guard = state.acquire_ref();
         const auto &ref = guard.get();
-        return sf::RenderWindow{sf::VideoMode{ref.width, ref.height}, name};
+        return sf::RenderWindow{sf::VideoMode{ref.width, ref.height},
+                                game.name()};
       }()},
       state(state), drawer{std::forward<Drawer>(drawer)},
       handler{std::forward<EventHandler>(handler)} {
@@ -17,8 +18,8 @@ DrawingWidget<State, Drawer, EventHandler>::DrawingWidget(
   schedule();
 }
 
-template <typename State, typename Drawer, typename EventHandler>
-void DrawingWidget<State, Drawer, EventHandler>::run() {
+template <typename State, typename Drawer, typename EventHandler, typename Game>
+void DrawingWidget<State, Drawer, EventHandler, Game>::run() {
   if (!window.isOpen()) {
     ctx.stop();
     return;
@@ -29,16 +30,16 @@ void DrawingWidget<State, Drawer, EventHandler>::run() {
   schedule();
 }
 
-template <typename State, typename Drawer, typename EventHandler>
-void DrawingWidget<State, Drawer, EventHandler>::process_events() {
+template <typename State, typename Drawer, typename EventHandler, typename Game>
+void DrawingWidget<State, Drawer, EventHandler, Game>::process_events() {
   sf::Event event;
   while (window.isOpen() && window.pollEvent(event)) {
     handler.handle(event, window);
   }
 }
 
-template <typename State, typename Drawer, typename EventHandler>
-void DrawingWidget<State, Drawer, EventHandler>::process_drawables() {
+template <typename State, typename Drawer, typename EventHandler, typename Game>
+void DrawingWidget<State, Drawer, EventHandler, Game>::process_drawables() {
   if (!window.isOpen())
     return;
 
@@ -52,8 +53,8 @@ void DrawingWidget<State, Drawer, EventHandler>::process_drawables() {
   window.display();
 }
 
-template <typename State, typename Drawer, typename EventHandler>
-void DrawingWidget<State, Drawer, EventHandler>::schedule() {
+template <typename State, typename Drawer, typename EventHandler, typename Game>
+void DrawingWidget<State, Drawer, EventHandler, Game>::schedule() {
   if (!window.isOpen())
     return;
 

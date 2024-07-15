@@ -1,11 +1,14 @@
 #include "game.hxx"
 #include "cell.hxx"
+#include <string>
 #include <vector>
+
+std::string Game::name() const { return "Game of Life"; }
 
 unsigned int Game::get(const state_data &data, const point &cell, int8_t xoff,
                        int8_t yoff) const {
   const auto &[width, height, _, board] = data;
-  auto const &[x, y] = cell;
+  auto const &[x, y, idx] = cell;
   if (x == 0 && xoff == -1)
     return 0;
   if (x == width - 1 && xoff == 1)

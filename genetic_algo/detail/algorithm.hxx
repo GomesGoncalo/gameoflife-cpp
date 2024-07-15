@@ -3,19 +3,15 @@
 #include <asio/post.hpp>
 
 #include <algorithm>
-#include <iostream>
+#include <condition_variable>
 #include <mutex>
-#include <thread>
 
 namespace algo {
 template <typename Container, typename Callable>
 void for_each(parallel &&p, Container &&container, Callable &&callable) {
   std::mutex mtx;
   std::condition_variable cv;
-  const auto number_of_splits = [] {
-    const auto optimal = std::thread::hardware_concurrency() - 1;
-    return optimal;
-  }();
+  const auto number_of_splits = p.threads;
 
   auto begin = container.begin();
   auto end = container.end();
