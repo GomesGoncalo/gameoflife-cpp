@@ -15,7 +15,6 @@ template <typename T, typename Updater> struct mutable_reference {
   }
 
   [[nodiscard]] T &get() { return mutable_ref; }
-  [[nodiscard]] const T &get_cached() { return ref; }
 
 private:
   friend struct data<T, Updater>;
@@ -42,14 +41,19 @@ private:
   std::shared_lock<std::shared_mutex> guard;
 };
 
-struct Equal {
+struct Move {
   template <typename T> void commit(T &cached, T &modified) {
     std::swap(cached, modified);
   }
 };
+struct Equal {
+  template <typename T> void commit(T &cached, T &modified) {
+    cached = modified;
+  }
+};
 
 template <typename T, typename Updater = Equal> struct data {
-  data(T board, Updater updater = Equal{})
+  data(T &&board, Updater updater = Equal{})
       : cached{board}, mutdata{std::forward<T>(board)},
         updater{std::forward<Updater>(updater)} {}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "algorithm.hxx"
+#include <genetic_algo/algorithm.hxx>
 
 #include <asio/io_context.hpp>
 #include <chrono>
@@ -19,10 +19,11 @@ struct dead final : public point {};
 using CellTypes = std::variant<dead, live>;
 
 struct state_data {
-  state_data() = default;
+  constexpr state_data() = default;
   state_data(unsigned int width, unsigned height, unsigned prob,
              std::chrono::milliseconds msec);
 
+  state_data clone() const;
   void reset();
 
   static std::optional<state_data> create(int argc, const char *argv[]);
@@ -32,24 +33,26 @@ struct state_data {
   unsigned int probability = 25;
   std::chrono::milliseconds logic_granularity{30};
   std::vector<CellTypes> board;
+  uint64_t generations{0};
 };
 
-template <typename Inequality> struct OnlyDifferent {
+template <typename Equality> struct OnlyDifferent {
   OnlyDifferent(asio::io_context &ctx) : ctx{ctx} {}
 
   void commit(state_data &cached, const state_data &modified) {
-    if (cached.width != modified.width || cached.height != modified.height ||
-        cached.probability != modified.probability ||
-        cached.logic_granularity != modified.logic_granularity) {
+    cached.generations = modified.generations;
+    cached.logic_granularity = modified.logic_granularity;
+    cached.probability = modified.probability;
+    if (cached.width != modified.width || cached.height != modified.height) {
       cached = modified;
     } else {
-      Inequality neq;
+      Equality eq;
       algo::for_each(
-          algo::parallel{ctx}, cached.board, [&modified, &neq](auto &element) {
+          algo::parallel{ctx}, cached.board, [&modified, &eq](auto &element) {
             const auto idx =
                 std::visit([](const auto &p) { return p.idx; }, element);
             auto &modified_element = modified.board[idx];
-            if (!neq.cmp(element, modified_element)) {
+            if (eq.cmp(element, modified_element)) {
               return;
             }
             element = modified_element;

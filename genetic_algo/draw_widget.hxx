@@ -1,12 +1,12 @@
 #pragma once
 
+#include "scheduler.hxx"
 #include <SFML/Graphics.hpp>
 #include <asio/io_context.hpp>
 
 template <typename State, typename Drawer, typename EventHandler, typename Game>
 struct DrawingWidget {
-  DrawingWidget(asio::io_context &, asio::io_context &, Game &, State &,
-                Drawer &&, EventHandler &&);
+  DrawingWidget(scheduler &, Game &, State &, Drawer &&, EventHandler &&);
 
 private:
   void run();
@@ -14,8 +14,7 @@ private:
   void process_drawables();
   void schedule();
 
-  asio::io_context &main_ctx;
-  asio::io_context &ctx;
+  scheduler &ctx;
   sf::RenderWindow window;
   State &state;
   Drawer drawer;

@@ -1,19 +1,19 @@
 #pragma once
 
-#include <asio/executor_work_guard.hpp>
 #include <asio/io_context.hpp>
 #include <thread>
 #include <vector>
 
-struct scheduler {
-  scheduler(asio::io_context &ctx,
-            const unsigned int num = std::thread::hardware_concurrency() - 1);
-  ~scheduler();
+struct scheduler : public asio::io_context {
+  unsigned int size() const noexcept { return size_; }
+
+  void stop() { main_ctx.stop(); }
+
+  asio::io_context &main_thread() noexcept { return main_ctx; }
+
+  void run();
 
 private:
-  asio::io_context &ctx;
-  asio::executor_work_guard<
-      decltype(std::declval<asio::io_context &>().get_executor())>
-      work;
-  std::vector<std::jthread> threads;
+  asio::io_context main_ctx;
+  unsigned int size_ = std::thread::hardware_concurrency();
 };

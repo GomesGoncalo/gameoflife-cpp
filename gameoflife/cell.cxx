@@ -40,7 +40,10 @@ std::optional<state_data> state_data::create(int argc, const char *argv[]) {
                 "Life probability")(
       "step,s",
       po::value(&val.logic_granularity)->default_value(val.logic_granularity),
-      "Step duration");
+      "Step duration")(
+      "generations,g",
+      po::value(&val.generations)->default_value(val.generations),
+      "Number of generations (0 means unlimited)");
 
   po::options_description visible;
   visible.add(generic);
@@ -78,6 +81,17 @@ void state_data::reset() {
       ++idx;
     }
   }
+}
+
+state_data state_data::clone() const {
+  state_data o;
+  o.width = width;
+  o.height = height;
+  o.probability = probability;
+  o.logic_granularity = logic_granularity;
+  o.board = board;
+  o.generations = generations;
+  return o;
 }
 
 state_data::state_data(unsigned int width, unsigned height,

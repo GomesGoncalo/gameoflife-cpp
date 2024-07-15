@@ -1,14 +1,13 @@
 #include "scheduler.hxx"
 
-scheduler::scheduler(asio::io_context &ctx, const unsigned int num)
-    : ctx{ctx}, work{asio::make_work_guard(ctx)} {
-  threads.reserve(num);
-  for (std::remove_cvref_t<decltype(num)> start = 0; start < num; ++start) {
-    threads.emplace_back([&ctx] { ctx.run(); });
+void scheduler::run() {
+  std::vector<std::jthread> threads;
+  threads.reserve(size_);
+  auto guard = asio::make_work_guard(*this);
+  for (unsigned int start = 0u; start < size_; ++start) {
+    threads.emplace_back([this] { asio::io_context::run(); });
   }
-}
-
-scheduler::~scheduler() {
-  work.reset();
-  ctx.stop();
+  main_ctx.run();
+  guard.reset();
+  asio::io_context::stop();
 }

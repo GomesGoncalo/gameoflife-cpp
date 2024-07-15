@@ -10,20 +10,17 @@ namespace algo {
 template <typename Container, typename Callable>
 void for_each(parallel &&p, Container &&container, Callable &&callable) {
   const auto number_of_splits = p.threads;
-  auto counter = number_of_splits;
-  std::mutex mtx;
-  std::condition_variable cv;
-  auto notify_till_done = [&counter, &mtx, &cv](const bool wait = false) {
-    std::unique_lock<std::mutex> lk{mtx};
-    --counter;
-    if (counter == 0) {
-      cv.notify_all();
-    }
-    if (wait && counter) {
-      cv.wait(lk, [&counter] { return counter == 0; });
-    }
+  std::atomic<bool> running{true};
+  struct holder {
+    ~holder() noexcept { fn(); }
+    std::move_only_function<void()> fn;
   };
 
+  auto holders = std::make_shared<holder>([&running] noexcept {
+    running.store(false, std::memory_order::seq_cst);
+    running.notify_all();
+  });
+  std::weak_ptr<holder> wp{holders};
   auto begin = container.begin();
   auto end = container.end();
 
@@ -35,14 +32,13 @@ void for_each(parallel &&p, Container &&container, Callable &&callable) {
     auto split_end = cursor;
     std::advance(split_end, split_size);
     cursor = split_end;
-    asio::post(p.ctx, [split_begin, split_end, &callable, &notify_till_done] {
+    asio::post(p.ctx, [split_begin, split_end, &callable, holders] {
       std::for_each(split_begin, split_end, callable);
-      notify_till_done();
     });
   }
-
+  holders.reset();
   std::for_each(cursor, end, callable);
-  notify_till_done(true);
+  running.wait(true, std::memory_order::seq_cst);
 }
 
 template <typename Container, typename Callable>

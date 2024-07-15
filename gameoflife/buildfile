@@ -3,7 +3,9 @@ import libs += libsfml-graphics%lib{sfml-graphics}
 import libs += libasio%lib{asio}
 import libs += libboost-program-options%lib{boost_program_options}
 
-lib{genetic_algo}: {hxx ixx txx cxx}{**} $libs
+include ../genetic_algo/
+
+exe{gameoflife}: {hxx ixx txx cxx}{**} $libs ../genetic_algo/lib{genetic_algo}
 
 cxx.poptions =+ "-I$out_root" "-I$src_root"
 cxx.coptions=-O3

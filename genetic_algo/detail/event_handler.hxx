@@ -4,9 +4,9 @@
 #include "window_utils.hxx"
 #include <SFML/Graphics.hpp>
 
-template <typename Updater, typename Game>
-void EventHandler<Updater, Game>::handle(const sf::Event &event,
-                                         sf::RenderWindow &window) const {
+template <typename State, typename Game>
+void EventHandler<State, Game>::handle(const sf::Event &event,
+                                       sf::RenderWindow &window) const {
   if (event.type == sf::Event::Closed) {
     window.close();
   }
@@ -24,8 +24,9 @@ void EventHandler<Updater, Game>::handle(const sf::Event &event,
     window.setTitle(window_title(state, game));
     auto guard = state.acquire_mut();
     auto &board = guard.get();
-    board = state_data(event.size.width, event.size.height, board.probability,
-                       board.logic_granularity);
+    board.width = event.size.width;
+    board.height = event.size.height;
+    board.reset();
   }
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Q) {
