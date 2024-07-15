@@ -4,9 +4,8 @@
 
 template <typename State, typename Game>
 LogicWidget<State, Game>::LogicWidget(asio::io_context &ctx, State &state,
-                                      Game &game,
-                                      std::chrono::milliseconds duration)
-    : state{state}, game{game}, ctx{ctx}, timer{ctx}, duration{duration} {
+                                      Game &game)
+    : state{state}, game{game}, ctx{ctx}, timer{ctx} {
   schedule();
 }
 
@@ -31,6 +30,8 @@ void LogicWidget<State, Game>::run(const asio::error_code &ec) {
 
 template <typename State, typename Game>
 void LogicWidget<State, Game>::schedule() {
-  timer.expires_from_now(duration);
+  auto state_guard = state.acquire_ref();
+  const auto &state_ref = state_guard.get();
+  timer.expires_from_now(state_ref.logic_granularity);
   timer.async_wait(std::bind(&LogicWidget::run, this, std::placeholders::_1));
 }

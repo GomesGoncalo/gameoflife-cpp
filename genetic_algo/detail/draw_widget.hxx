@@ -14,6 +14,7 @@ DrawingWidget<State, Drawer, EventHandler, Game>::DrawingWidget(
       }()},
       state(state), drawer{std::forward<Drawer>(drawer)},
       handler{std::forward<EventHandler>(handler)} {
+  window.setFramerateLimit(0);
   window.setVerticalSyncEnabled(true);
   schedule();
 }

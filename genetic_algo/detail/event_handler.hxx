@@ -24,7 +24,8 @@ void EventHandler<Updater, Game>::handle(const sf::Event &event,
     window.setTitle(window_title(state, game));
     auto guard = state.acquire_mut();
     auto &board = guard.get();
-    board = state_data(event.size.width, event.size.height, board.probability);
+    board = state_data(event.size.width, event.size.height, board.probability,
+                       board.logic_granularity);
   }
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Q) {
@@ -42,6 +43,11 @@ void EventHandler<Updater, Game>::handle(const sf::Event &event,
           static_cast<float>(game.height) / 2,
       });
       window.setView(view);
+    }
+    if (event.key.code == sf::Keyboard::S) {
+      auto guard = state.acquire_mut();
+      auto &game = guard.get();
+      game.reset();
     }
     if (event.key.code == sf::Keyboard::J) {
       view.zoom(1.1);

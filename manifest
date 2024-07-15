@@ -10,6 +10,6 @@ email: gomesgoncalo@gmail.com
 #build-error-email: gomesgoncalo@gmail.com
 depends: * build2 >= 0.16.0
 depends: * bpkg >= 0.16.0
-#depends: libhello ^1.0.0
+depends: libboost-program-options == 1.83.0
 depends: libsfml-graphics ^2.5.1
 depends: libasio ^1.28.0

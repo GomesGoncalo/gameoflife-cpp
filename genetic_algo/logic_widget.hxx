@@ -5,9 +5,7 @@
 #include <chrono>
 
 template <typename State, typename Game> struct LogicWidget {
-  LogicWidget(
-      asio::io_context &, State &, Game &,
-      std::chrono::milliseconds duration = std::chrono::milliseconds(10));
+  LogicWidget(asio::io_context &, State &, Game &);
 
 private:
   void run(const asio::error_code &ec);

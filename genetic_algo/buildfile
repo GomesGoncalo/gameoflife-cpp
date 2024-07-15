@@ -1,6 +1,7 @@
 libs =
 import libs += libsfml-graphics%lib{sfml-graphics}
 import libs += libasio%lib{asio}
+import libs += libboost-program-options%lib{boost_program_options}
 
 exe{genetic_algo}: {hxx ixx txx cxx}{**} $libs testscript
 
