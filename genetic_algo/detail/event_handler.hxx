@@ -6,7 +6,7 @@
 
 template <typename State, typename Game>
 void EventHandler<State, Game>::handle(const sf::Event &event,
-                                       sf::RenderWindow &window) const {
+                                       sf::RenderWindow &window) {
   if (event.type == sf::Event::Closed) {
     window.close();
   }
@@ -50,29 +50,43 @@ void EventHandler<State, Game>::handle(const sf::Event &event,
       auto &game = guard.get();
       game.reset();
     }
-    if (event.key.code == sf::Keyboard::J) {
-      view.zoom(1.1);
-      window.setView(view);
+  }
+
+  if (event.type == sf::Event::MouseButtonPressed) {
+    if (event.mouseButton.button == 0) {
+      moving = true;
+      oldPos = window.mapPixelToCoords(
+          sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
     }
-    if (event.key.code == sf::Keyboard::K) {
-      view.zoom(0.9);
-      window.setView(view);
+  }
+
+  if (event.type == sf::Event::MouseButtonReleased) {
+    if (event.mouseButton.button == 0) {
+      moving = false;
     }
-    if (event.key.code == sf::Keyboard::Up) {
-      view.move(0, -10);
-      window.setView(view);
-    }
-    if (event.key.code == sf::Keyboard::Down) {
-      view.move(0, 10);
-      window.setView(view);
-    }
-    if (event.key.code == sf::Keyboard::Left) {
-      view.move(-10, 0);
-      window.setView(view);
-    }
-    if (event.key.code == sf::Keyboard::Right) {
-      view.move(10, 0);
-      window.setView(view);
-    }
+  }
+
+  if (event.type == sf::Event::MouseMoved) {
+    if (!moving)
+      return;
+
+    const sf::Vector2f newPos = window.mapPixelToCoords(
+        sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+    const sf::Vector2f deltaPos = oldPos - newPos;
+    view.move(deltaPos.x, deltaPos.y);
+    window.setView(view);
+    oldPos = window.mapPixelToCoords(
+        sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+  }
+
+  if (event.type == sf::Event::MouseWheelScrolled) {
+    if (event.mouseWheelScroll.delta <= -1)
+      zoom *= 1.1f;
+    else if (event.mouseWheelScroll.delta >= 1)
+      zoom /= 1.1f;
+
+    view.setSize(window.getDefaultView().getSize());
+    view.zoom(zoom);
+    window.setView(view);
   }
 }

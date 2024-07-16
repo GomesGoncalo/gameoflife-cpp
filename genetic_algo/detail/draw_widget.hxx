@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../tracer.hxx"
+#include "window_utils.hxx"
 #include <asio/post.hpp>
 
 template <typename State, typename Drawer, typename EventHandler, typename Game>
@@ -11,7 +12,7 @@ DrawingWidget<State, Drawer, EventHandler, Game>::DrawingWidget(
         const auto guard = state.acquire_ref();
         const auto &ref = guard.get();
         return sf::RenderWindow{sf::VideoMode{ref.width, ref.height},
-                                game.name()};
+                                window_title(state, game)};
       }()},
       state(state), drawer{std::forward<Drawer>(drawer)},
       handler{std::forward<EventHandler>(handler)} {

@@ -13,7 +13,7 @@ void for_each(parallel &&p, Container &&container, Callable &&callable) {
   std::atomic<bool> running{true};
   struct holder {
     ~holder() noexcept { fn(); }
-    std::move_only_function<void()> fn;
+    std::function<void()> fn;
   };
 
   auto holders = std::make_shared<holder>([&running] noexcept {
