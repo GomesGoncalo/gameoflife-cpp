@@ -6,12 +6,10 @@
 namespace two_lane {
 template <typename T, typename Updater> struct data;
 template <typename T, typename Updater> struct mutable_reference {
-  ~mutable_reference() noexcept {
-    try {
-      std::unique_lock<std::shared_mutex> l{cache_mutex};
-      updater.commit(ref, mutable_ref);
-    } catch (...) {
-    }
+  ~mutable_reference() noexcept try {
+    std::unique_lock<std::shared_mutex> l{cache_mutex};
+    updater.commit(ref, mutable_ref);
+  } catch (...) {
   }
 
   [[nodiscard]] T &get() { return mutable_ref; }
