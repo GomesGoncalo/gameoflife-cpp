@@ -12,21 +12,12 @@ void EventHandler<State, Game>::handle(const sf::Event &event,
   }
   auto view = window.getView();
   if (event.type == sf::Event::Resized) {
-    view.setSize({
-        static_cast<float>(event.size.width),
-        static_cast<float>(event.size.height),
-    });
-    view.setCenter({
-        static_cast<float>(event.size.width) / 2,
-        static_cast<float>(event.size.height) / 2,
-    });
-    window.setView(view);
-    window.setTitle(window_title(state, game));
     auto guard = state.acquire_mut();
     auto &board = guard.get();
     board.width = event.size.width;
     board.height = event.size.height;
     board.reset();
+    window.setTitle(window_title(state, game));
   }
   if (event.type == sf::Event::KeyPressed) {
     if (event.key.code == sf::Keyboard::Q) {

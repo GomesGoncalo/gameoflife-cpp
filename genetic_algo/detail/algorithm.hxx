@@ -12,13 +12,18 @@ void for_each(parallel &&p, Container &&container, Callable &&callable) {
   const auto number_of_splits = p.threads;
   std::atomic<bool> running{true};
   struct holder {
+    holder(std::function<void()> &&fn) : fn(std::move(fn)) {}
+    holder(const holder &) = delete;
+    holder(holder &&) = delete;
+    holder &operator=(const holder &) = delete;
+    holder &operator=(holder &&) = delete;
     ~holder() noexcept { fn(); }
     std::function<void()> fn;
   };
 
   auto holders = std::make_shared<holder>([&running] noexcept {
     running.store(false, std::memory_order::seq_cst);
-    running.notify_all();
+    running.notify_one();
   });
   std::weak_ptr<holder> wp{holders};
   auto begin = container.begin();

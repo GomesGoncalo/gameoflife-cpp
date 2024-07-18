@@ -7,9 +7,7 @@ LogicWidget<State, Game>::LogicWidget(scheduler &ctx, State &state, Game &game)
     : state{state}, game{game}, ctx{ctx}, timer{ctx} {
   auto state_guard = state.acquire_ref();
   const auto &state_ref = state_guard.get();
-
   generations = state_ref.generations;
-
   schedule();
 }
 
@@ -21,9 +19,8 @@ void LogicWidget<State, Game>::run(const asio::error_code &ec) {
 
   auto board_mut_guard = state.acquire_mut();
   auto &board_mut = board_mut_guard.get();
-  auto board_guard = state.acquire_ref();
-  auto &cached = board_guard.get();
-
+  const auto board_guard = state.acquire_ref();
+  const auto &cached = board_guard.get();
   auto guard = tracer::instance().acquire("logic");
   algo::for_each(algo::parallel{ctx}, board_mut.board,
                  [&cached, this](auto &cell) {

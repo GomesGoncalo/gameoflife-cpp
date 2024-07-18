@@ -7,9 +7,7 @@
 #include <genetic_algo/scheduler.hxx>
 #include <genetic_algo/threadsafe.hxx>
 #include <genetic_algo/tracer.hxx>
-#include <genetic_algo/variant_utils.hxx>
 
-#include <asio/signal_set.hpp>
 #include <iostream>
 
 int main(int argc, const char *argv[]) try {
@@ -17,19 +15,18 @@ int main(int argc, const char *argv[]) try {
   if (!board)
     return EXIT_SUCCESS;
 
-  scheduler ctx;
-  OnlyDifferent<VariantSameType> updater{ctx};
+  asio::io_context main_thread;
+  scheduler ctx{main_thread};
 
-  two_lane::data<decltype(board)::value_type, OnlyDifferent<VariantSameType>>
-      state{*std::move(board), std::move(updater)};
+  rcu::data state{*std::move(board)};
 
   Game game;
   LogicWidget logic{ctx, state, game};
-
-  DrawingWidget draw{ctx, game, state, Drawer{},
-                     EventHandler<decltype(state), Game>{state, game}};
+  EventHandler event_handler{state, game};
+  DrawingWidget draw{ctx, game, state, Drawer{}, std::move(event_handler)};
   auto _ = tracer::instance().report_every(ctx, std::chrono::seconds{1});
-  ctx.run();
+  main_thread.run();
+  ctx.stop();
   return EXIT_SUCCESS;
 } catch (const std::exception &e) {
   std::cerr << "Exception: " << e.what() << "\n";

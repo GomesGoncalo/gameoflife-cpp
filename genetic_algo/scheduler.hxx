@@ -5,15 +5,21 @@
 #include <vector>
 
 struct scheduler : public asio::io_context {
-  unsigned int size() const noexcept { return size_; }
+  scheduler(asio::io_context &main_ctx);
+  ~scheduler();
+  scheduler(scheduler &&) = delete;
+  scheduler(const scheduler &) = delete;
+  scheduler &operator=(scheduler &&) = delete;
+  scheduler &operator=(const scheduler &) = delete;
 
-  void stop() { main_ctx.stop(); }
+  void stop() {
+    asio::io_context::stop();
+    main_ctx.stop();
+  }
 
   asio::io_context &main_thread() noexcept { return main_ctx; }
 
-  void run();
-
 private:
-  asio::io_context main_ctx;
-  unsigned int size_ = std::thread::hardware_concurrency();
+  asio::io_context &main_ctx;
+  std::vector<std::thread> threads;
 };
